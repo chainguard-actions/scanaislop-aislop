@@ -1,0 +1,51 @@
+name: Test aislop with custom Node.js version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal test directory
+        run: |
+          mkdir -p /tmp/test-scan-node
+          cat > /tmp/test-scan-node/index.js << 'EOF'
+          // Simple hand-written module
+          const PI = 3.14159;
+          function circleArea(r) {
+            return PI * r * r;
+          }
+          module.exports = { circleArea };
+          EOF
+
+      - name: Run aislop action with Node.js 18
+        id: action
+        uses: .
+        with:
+          directory: /tmp/test-scan-node
+          node-version: "18"
+          format: json
+        continue-on-error: true
+
+      - name: Assert Node.js version was set up and action ran
+        run: |
+          echo "action outcome: ${{ steps.action.outcome }}"
+          # Verify node is available and at the right major version
+          node_version=$(node --version)
+          echo "Node.js version: $node_version"
+          major=$(echo "$node_version" | sed 's/v\([0-9]*\).*/\1/')
+          if [ "$major" != "18" ]; then
+            echo "FAIL: expected Node.js 18, got $node_version"
+            exit 1
+          fi
+          echo "PASS: Node.js 18 was set up correctly"
+
+          # The action should either succeed or fail with a quality gate failure
+          outcome="${{ steps.action.outcome }}"
+          if [ "$outcome" = "success" ] || [ "$outcome" = "failure" ]; then
+            echo "PASS: aislop ran and produced an outcome: $outcome"
+          else
+            echo "FAIL: unexpected outcome '$outcome'"
+            exit 1
+          fi

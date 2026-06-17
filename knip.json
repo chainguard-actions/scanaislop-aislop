@@ -1,0 +1,11 @@
+{
+	"$schema": "https://unpkg.com/knip@5/schema.json",
+	"ignore": [
+		"editors/**"
+	],
+	"ignoreDependencies": [
+		"@biomejs/biome",
+		"oxlint",
+		"expo-doctor"
+	]
+}
