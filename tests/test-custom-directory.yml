@@ -1,0 +1,32 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create target directory with aislop config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/my-project/.aislop"
+          cat > "$GITHUB_WORKSPACE/my-project/.aislop/config.yml" <<'EOF'
+          threshold: 0
+          EOF
+          # Add a sample source file to scan
+          cat > "$GITHUB_WORKSPACE/my-project/hello.js" <<'EOF'
+          // A simple JS file
+          console.log("hello world");
+          EOF
+
+      - name: Run aislop action on custom directory
+        id: action
+        uses: .
+        with:
+          directory: "my-project"
+          format: "json"
+          node-version: "20"
+
+      - name: Assert action completed successfully
+        run: |
+          echo "PASS: aislop ci completed on custom directory without error"

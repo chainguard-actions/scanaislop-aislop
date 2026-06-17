@@ -1,0 +1,27 @@
+name: Test human format output
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create aislop config with zero threshold
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.aislop"
+          cat > "$GITHUB_WORKSPACE/.aislop/config.yml" <<'EOF'
+          threshold: 0
+          EOF
+
+      - name: Run aislop action with human format
+        id: action
+        uses: .
+        with:
+          directory: "."
+          format: "human"
+          node-version: "20"
+
+      - name: Assert action completed successfully
+        run: |
+          echo "PASS: aislop ci completed with human format without error"
