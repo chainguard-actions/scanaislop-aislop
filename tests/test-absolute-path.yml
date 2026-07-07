@@ -1,0 +1,25 @@
+name: Test absolute directory path
+on:
+  workflow_dispatch:
+
+jobs:
+  test-absolute-path:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop with absolute directory path
+        id: action
+        uses: .
+        with:
+          directory: ${{ github.workspace }}/tests/fixtures/sample-project
+          format: json
+          version: latest
+
+      - name: Assert aislop ran successfully with absolute path
+        run: |
+          echo "aislop ci with absolute directory path completed without error"
+          echo "PASS"

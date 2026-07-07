@@ -1,0 +1,25 @@
+name: Test basic usage (JSON format, default inputs)
+on:
+  workflow_dispatch:
+
+jobs:
+  test-basic:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop on fixture project (JSON format)
+        id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-project
+          format: json
+          version: latest
+
+      - name: Assert aislop ran successfully
+        run: |
+          echo "aislop ci completed without error"
+          echo "PASS"

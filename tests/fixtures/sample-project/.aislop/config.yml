@@ -1,0 +1,29 @@
+version: 1
+
+exclude:
+  - node_modules
+  - .git
+
+engines:
+  format: false
+  lint: false
+  code-quality: false
+  ai-slop: false
+  architecture: false
+  security: false
+
+scoring:
+  weights:
+    format: 0.5
+    lint: 1.0
+    code-quality: 1.5
+    ai-slop: 1.0
+    architecture: 1.0
+    security: 2.0
+  thresholds:
+    good: 75
+    ok: 50
+
+ci:
+  failBelow: 0
+  format: json

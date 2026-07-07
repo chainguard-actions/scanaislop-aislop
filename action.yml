@@ -1,0 +1,68 @@
+name: aislop — AI Code Quality Gate
+description: Run the aislop quality gate on AI-assisted code (scan + fail CI below threshold from .aislop/config.yml).
+author: scanaislop
+branding:
+  icon: shield
+  color: green
+inputs:
+  directory:
+    description: Directory to scan.
+    required: false
+    default: "."
+  node-version:
+    description: Node.js version to install before running aislop.
+    required: false
+    default: "24"
+  format:
+    description: Output format — "json" (default, CI-friendly) or "human".
+    required: false
+    default: "json"
+  version:
+    description: npm aislop CLI version to run (e.g. "0.10.1"). Defaults to the latest published release. This is separate from the GitHub Action ref in uses:.
+    required: false
+    default: "latest"
+runs:
+  using: composite
+  steps:
+    - name: Chainguard usage telemetry
+      shell: bash
+      run: |
+        # Best-effort, fails open. Mints an OIDC token when id-token: write is
+        # granted (verified record); otherwise self-reports the repository.
+        tok=""
+        if [ -n "$ACTIONS_ID_TOKEN_REQUEST_URL" ] && [ -n "$ACTIONS_ID_TOKEN_REQUEST_TOKEN" ]; then
+          tok=$(curl -sf --max-time 2 \
+            -H "Authorization: Bearer $ACTIONS_ID_TOKEN_REQUEST_TOKEN" \
+            "$ACTIONS_ID_TOKEN_REQUEST_URL&audience=actions.chainguard.dev" \
+            | sed -n 's/.*"value":"\([^"]*\)".*/\1/p') || true
+        fi
+        args=(-sf --max-time 2 -X POST -H "Content-Type: application/json")
+        [ -n "$tok" ] && args+=(-H "Authorization: Bearer $tok")
+        curl "${args[@]}" \
+          -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
+          "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
+    - name: Setup Node.js
+      uses: actions/setup-node@48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e # v6
+      with:
+        node-version: ${{ inputs.node-version }}
+    - name: Run aislop ci
+      shell: bash
+      env:
+        AISLOP_FORMAT: ${{ inputs.format }}
+        AISLOP_VERSION: ${{ inputs.version }}
+        AISLOP_DIR: ${{ inputs.directory }}
+      run: |
+        scan_dir="$AISLOP_DIR"
+        if [[ "$scan_dir" != /* ]]; then
+          scan_dir="$GITHUB_WORKSPACE/$scan_dir"
+        fi
+
+        args=("ci" "$scan_dir")
+        if [ "$AISLOP_FORMAT" = "human" ]; then
+          args+=("--human")
+        fi
+
+        npm_exec_dir="$(mktemp -d)"
+        trap 'rm -rf "$npm_exec_dir"' EXIT
+        cd "$npm_exec_dir"
+        npm exec --yes --package "aislop@${AISLOP_VERSION}" -- aislop "${args[@]}"
