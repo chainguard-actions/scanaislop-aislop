@@ -8,7 +8,7 @@
 
 **Test Policy SHA:** `843adf9e4b8f85d0c08b27b9d0b09dd094b54702`
 
-**Harden Agent Version:** `1`
+**Harden Agent Version:** `2`
 
 Action **scanaislop--aislop/v0.13.1** was hardened automatically. 2 finding(s) were identified and resolved across 1 iteration(s).
 
@@ -16,25 +16,37 @@ Action **scanaislop--aislop/v0.13.1** was hardened automatically. 2 finding(s) w
 
 ### unpinned-uses (severity: high)
 
-Multiple `uses:` references are pinned to mutable version tags instead of full 40-character SHA digests, making them vulnerable to supply-chain attacks if the tag is moved. Failing references include: `actions/setup-node@v6` in action.yml; `actions/checkout@v7`, `pnpm/action-setup@v5`, `actions/setup-node@v6` in aislop.yml; `actions/checkout@v7`, `pnpm/action-setup@v5`, `actions/setup-node@v6` in ci.yml; `actions/checkout@v7`, `github/codeql-action/init@v4`, `github/codeql-action/analyze@v4` in codeql.yml; `actions/checkout@v7`, `actions/setup-node@v6` in contributors.yml; `actions/checkout@v7`, `pnpm/action-setup@v4`, `actions/setup-node@v6` in release.yml; `actions/checkout@v7` in sync-develop.yml.
+Multiple `uses:` references across action.yml and all workflow files are pinned to mutable tags (e.g. @v4, @v5, @v6, @v7) rather than immutable 40-character SHA commit hashes. This exposes the action to supply-chain attacks if any upstream action is compromised or its tag is moved.
+
+Failing references include:
+- action.yml: actions/setup-node@v6
+- .github/workflows/aislop.yml: actions/checkout@v7, pnpm/action-setup@v5, actions/setup-node@v6
+- .github/workflows/ci.yml: actions/checkout@v7, pnpm/action-setup@v5, actions/setup-node@v6
+- .github/workflows/codeql.yml: actions/checkout@v7, github/codeql-action/init@v4, github/codeql-action/analyze@v4
+- .github/workflows/contributors.yml: actions/checkout@v7, actions/setup-node@v6
+- .github/workflows/release.yml: actions/checkout@v7, pnpm/action-setup@v4, actions/setup-node@v6
+- .github/workflows/sync-develop.yml: actions/checkout@v7
 
 Locations:
 
-- `action.yml:30`
+- `action.yml:33`
 - `.github/workflows/aislop.yml:14`
 - `.github/workflows/ci.yml:22`
 - `.github/workflows/codeql.yml:55`
 - `.github/workflows/contributors.yml:14`
 - `.github/workflows/release.yml:14`
-- `.github/workflows/sync-develop.yml:10`
+- `.github/workflows/sync-develop.yml:11`
 
 ### script-injection (severity: high)
 
-Rule (a) violation: In the 'Push refresh branch' run block, `${{ github.repository }}` and `${{ github.ref_name }}` are interpolated directly inside a shell command string (`echo "...https://github.com/${{ github.repository }}/compare/${{ github.ref_name }}..."`). Any `${{ ... }}` expression directly inside a `run:` block is a script-injection risk because the value is substituted by the Actions template engine before the shell ever sees it, allowing special characters to be interpreted by the shell.
+In .github/workflows/contributors.yml, the 'Push refresh branch' run: block directly interpolates `${{ github.repository }}` and `${{ github.ref_name }}` inside a shell command string (an echo statement). This is a sub-rule (a) violation: any `${{ ... }}` expression interpolated directly inside a run: block is a script injection risk, as the value is substituted by the YAML template engine before the shell ever sees it. An attacker who can control the repository name or ref name could inject shell metacharacters.
+
+Offending line:
+  echo "Pushed to `bot/contributors-update`. Open a PR from the GitHub UI to merge: https://github.com/${{ github.repository }}/compare/${{ github.ref_name }}...bot/contributors-update?expand=1"
 
 Locations:
 
-- `.github/workflows/contributors.yml:43`
+- `.github/workflows/contributors.yml:40`
 
 ## Iteration Notes
 
@@ -44,5 +56,5 @@ Locations:
 
 **Notes:**
 
-Pinned all mutable action tags to full SHA digests: actions/checkout@v7 → 9c091bb21b7c1c1d1991bb908d89e4e9dddfe3e0, actions/setup-node@v6 → 48b55a011bda9f5d6aeb4c2d9c7362e8dae4041e, pnpm/action-setup@v5 → fc06bc1257f339d1d5d8b3a19a8cae5388b55320, pnpm/action-setup@v4 → b906affcce14559ad1aafd4ab0e942779e9f58b1, github/codeql-action/init@v4 → 54f647b7e1bb85c95cddabcd46b0c578ec92bc1a, github/codeql-action/analyze@v4 → 54f647b7e1bb85c95cddabcd46b0c578ec92bc1a. Fixed script injection in contributors.yml by moving ${{ github.repository }} and ${{ github.ref_name }} from the run block into the step's env block as GH_REPOSITORY and GH_REF_NAME, then referencing them as plain shell variables in the script.
+Pinned all mutable tag references to full 40-character SHA hashes across action.yml and all 6 workflow files: actions/checkout@v7→SHA, actions/setup-node@v6→SHA, pnpm/action-setup@v5→SHA, pnpm/action-setup@v4→SHA, github/codeql-action/init@v4→SHA, github/codeql-action/analyze@v4→SHA. Fixed script injection in contributors.yml by moving ${{ github.repository }} and ${{ github.ref_name }} into the step's env: block as GH_REPOSITORY and GH_REF_NAME, then referencing them as plain shell variables in the run: block.
 

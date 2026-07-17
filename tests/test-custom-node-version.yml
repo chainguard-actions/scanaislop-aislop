@@ -1,0 +1,32 @@
+name: Test custom Node.js version
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop with Node.js 20
+        id: action
+        uses: .
+        with:
+          directory: tests/fixtures/aislop-config
+          node-version: "20"
+          format: json
+          version: latest
+
+      - name: Assert Node.js version was set correctly
+        run: |
+          NODE_VER="$(node --version)"
+          echo "Node.js version: $NODE_VER"
+          if [[ "$NODE_VER" != v20* ]]; then
+            echo "FAIL: expected Node.js v20.x but got $NODE_VER"
+            exit 1
+          fi
+          echo "PASS: Node.js version is $NODE_VER"
+
+      - name: Assert scan completed successfully
+        run: |
+          echo "PASS: aislop ci completed without error on Node.js 20"
