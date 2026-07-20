@@ -1,0 +1,46 @@
+name: Test custom node-version input
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create scan target directory with aislop config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/scan-node20/.aislop"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/scan-node20/.aislop/config.yml" <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/scan-node20/index.js" <<'EOF'
+          // Minimal file
+          function greet(name) {
+            return `Hello, ${name}!`;
+          }
+          module.exports = { greet };
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/scan-node20
+          node-version: "20"
+          format: json
+          version: latest
+
+      - name: Assert action completed with Node 20
+        run: |
+          echo "Action completed without error using Node.js 20"
+          echo "PASS"

@@ -1,0 +1,37 @@
+name: Test default directory scan (workspace root)
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Ensure workspace has a permissive aislop config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.aislop"
+          cat > "$GITHUB_WORKSPACE/.aislop/config.yml" <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          format: json
+          version: latest
+
+      - name: Assert action completed successfully on default directory
+        run: |
+          echo "Action completed without error scanning default directory (.)"
+          echo "PASS"

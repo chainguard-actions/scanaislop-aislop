@@ -1,0 +1,46 @@
+name: Test basic usage — JSON format, permissive threshold
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create scan target directory with aislop config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/scan-target/.aislop"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/scan-target/.aislop/config.yml" <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          # Write a minimal JS file to scan
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/scan-target/hello.js" <<'EOF'
+          // Simple hello world
+          function hello() {
+            return "hello world";
+          }
+          module.exports = { hello };
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/scan-target
+          format: json
+          version: latest
+
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed without error"
+          echo "PASS"

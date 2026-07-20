@@ -1,0 +1,30 @@
+name: Test custom directory input (relative path)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create fixture scan directory inside workspace
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-fixture/.aislop"
+          cat > "$GITHUB_WORKSPACE/scan-fixture/.aislop/config.yml" <<'EOF'
+          threshold: 0
+          EOF
+          echo "# Fixture file for aislop scan" > "$GITHUB_WORKSPACE/scan-fixture/README.md"
+
+      - name: Run aislop action with relative directory
+        id: action
+        uses: .
+        with:
+          directory: scan-fixture
+          format: json
+          node-version: "20"
+          version: "latest"
+
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed scanning relative directory without error"
+          echo "PASS"
