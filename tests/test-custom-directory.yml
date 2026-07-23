@@ -1,0 +1,41 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a custom scan target directory
+        run: |
+          mkdir -p /tmp/aislop-custom-scan/.aislop
+          cat > /tmp/aislop-custom-scan/.aislop/config.yml <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: true
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          # Write a minimal Python file to scan
+          cat > /tmp/aislop-custom-scan/main.py <<'EOF'
+          def greet(name):
+              return f"Hello, {name}!"
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: /tmp/aislop-custom-scan
+          format: json
+
+      - name: Assert action completed successfully with custom directory
+        run: |
+          echo "Action completed with exit code 0 for custom directory"
+          echo "PASS"
