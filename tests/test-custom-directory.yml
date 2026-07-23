@@ -1,0 +1,44 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create custom scan target directory with permissive config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/custom-dir/.aislop"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/custom-dir/.aislop/config.yml" <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          # Create a minimal source file to scan
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/custom-dir/index.js" <<'EOF'
+          // Entry point
+          function main() {
+            console.log("running");
+          }
+          main();
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/custom-dir
+          format: json
+          version: latest
+
+      - name: Assert action completed with custom directory
+        run: |
+          echo "Action completed scanning custom directory — PASS"

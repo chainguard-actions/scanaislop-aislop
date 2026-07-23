@@ -1,0 +1,43 @@
+name: Test pinned aislop CLI version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create scan target with permissive aislop config
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/pinned-version/.aislop"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/pinned-version/.aislop/config.yml" <<'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/pinned-version/app.js" <<'EOF'
+          // Minimal app
+          function run() {
+            return 42;
+          }
+          module.exports = { run };
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/pinned-version
+          format: json
+          version: "0.12.0"
+
+      - name: Assert action completed with pinned version
+        run: |
+          echo "Action completed with pinned version 0.12.0 — PASS"

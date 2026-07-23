@@ -1,0 +1,43 @@
+name: Test custom node version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    env:
+      GITHUB_REF: refs/heads/main
+      GITHUB_EVENT_NAME: push
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Create a fixture directory with a permissive aislop config (0% threshold)
+      - name: Create fixture directory with aislop config
+        run: |
+          mkdir -p /tmp/aislop-node-fixture/.aislop
+          cat > /tmp/aislop-node-fixture/.aislop/config.yml <<'EOF'
+          threshold: 0
+          EOF
+          # Create a simple JS file to scan
+          cat > /tmp/aislop-node-fixture/index.js <<'EOF'
+          // A simple file
+          console.log("hello world");
+          EOF
+
+      - name: Run aislop action with node 20
+        id: action
+        uses: .
+        with:
+          directory: /tmp/aislop-node-fixture
+          node-version: "20"
+          format: json
+          version: latest
+
+      - name: Assert node version was used
+        run: |
+          NODE_VER=$(node --version)
+          echo "Node version: $NODE_VER"
+          if [[ "$NODE_VER" != v20* ]]; then
+            echo "FAIL: expected node v20.x, got $NODE_VER"
+            exit 1
+          fi
+          echo "PASS"
