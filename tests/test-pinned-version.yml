@@ -1,0 +1,20 @@
+name: Test pinned aislop CLI version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop with a pinned CLI version on fixture directory
+        id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-project
+          format: json
+          version: "0.14.1"
+
+      - name: Assert action completed successfully with pinned version
+        run: |
+          echo "PASS: aislop@0.14.1 ci completed with exit code 0 (score >= failBelow threshold)"

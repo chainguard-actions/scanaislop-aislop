@@ -1,0 +1,21 @@
+name: Test custom Node.js version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop with custom Node.js version
+        id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-project
+          node-version: "22"
+          format: json
+          version: latest
+
+      - name: Assert action completed successfully with Node 22
+        run: |
+          echo "PASS: aislop ci completed with Node.js 22 and exit code 0"

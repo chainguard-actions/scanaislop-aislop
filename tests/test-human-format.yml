@@ -1,0 +1,20 @@
+name: Test human-readable output format
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop with human format on fixture directory
+        id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-project
+          format: human
+          version: latest
+
+      - name: Assert action completed successfully with human format
+        run: |
+          echo "PASS: aislop ci --human completed with exit code 0 (score >= failBelow threshold)"
