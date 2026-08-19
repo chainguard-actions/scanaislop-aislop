@@ -1,4 +1,4 @@
-name: Test aislop human format output
+name: Test human format output
 on:
   workflow_dispatch:
 jobs:
@@ -7,36 +7,15 @@ jobs:
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create a minimal test directory with a simple file
-        run: |
-          mkdir -p /tmp/test-scan-human
-          cat > /tmp/test-scan-human/utils.js << 'EOF'
-          // A simple hand-written utility
-          function greet(name) {
-            return "Hello, " + name + "!";
-          }
-          module.exports = { greet };
-          EOF
-
-      - name: Run aislop action with human format
+      - name: Run aislop with human-readable output format
         id: action
         uses: .
         with:
-          directory: /tmp/test-scan-human
+          directory: tests/fixtures/sample-project
           format: human
-          node-version: "20"
-        continue-on-error: true
+          version: latest
 
-      - name: Assert action ran with human format (step completed)
+      - name: Assert action completed successfully with human format
         run: |
-          echo "action outcome: ${{ steps.action.outcome }}"
-          # The action should either succeed or fail with a quality gate failure,
-          # but it must not error out due to missing tool or setup issues.
-          # We accept both 'success' and 'failure' as valid outcomes (tool ran).
-          outcome="${{ steps.action.outcome }}"
-          if [ "$outcome" = "success" ] || [ "$outcome" = "failure" ]; then
-            echo "PASS: aislop ran with human format and produced an outcome: $outcome"
-          else
-            echo "FAIL: unexpected outcome '$outcome'"
-            exit 1
-          fi
+          echo "aislop ci --human completed without error"
+          echo "PASS"
