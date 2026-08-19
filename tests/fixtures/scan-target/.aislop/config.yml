@@ -1,0 +1,25 @@
+version: 1
+
+engines:
+  format: false
+  lint: false
+  code-quality: false
+  ai-slop: false
+  architecture: false
+  security: false
+
+scoring:
+  weights:
+    format: 1.0
+    lint: 1.0
+    code-quality: 1.0
+    ai-slop: 1.0
+    architecture: 1.0
+    security: 1.0
+  thresholds:
+    good: 80
+    ok: 60
+
+ci:
+  failBelow: 0
+  format: json

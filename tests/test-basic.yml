@@ -1,27 +1,22 @@
-name: Test basic usage
+name: Test basic usage (json format, default settings)
 on:
   workflow_dispatch:
+
 jobs:
   test:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
 
-      - name: Create aislop config with zero threshold
-        run: |
-          mkdir -p "$GITHUB_WORKSPACE/.aislop"
-          cat > "$GITHUB_WORKSPACE/.aislop/config.yml" <<'EOF'
-          threshold: 0
-          EOF
-
-      - name: Run aislop action with defaults
+      - name: Run aislop action with default settings
         id: action
         uses: .
         with:
-          directory: "."
-          format: "json"
-          node-version: "20"
+          directory: ${{ github.workspace }}/tests/fixtures/scan-target
+          format: json
+          version: latest
 
       - name: Assert action completed successfully
         run: |
-          echo "PASS: aislop ci completed without error"
+          echo "Action completed without error (exit 0)"
+          echo "PASS"

@@ -1,0 +1,28 @@
+name: Test custom Node.js version
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Run aislop action with Node.js 22
+        id: action
+        uses: .
+        with:
+          directory: ${{ github.workspace }}/tests/fixtures/scan-target
+          node-version: "22"
+          format: json
+          version: latest
+
+      - name: Assert correct Node.js version was used
+        run: |
+          NODE_VER="$(node --version)"
+          echo "Node.js version: $NODE_VER"
+          if [[ "$NODE_VER" != v22* ]]; then
+            echo "FAIL: expected Node.js v22.x but got $NODE_VER"
+            exit 1
+          fi
+          echo "PASS: Node.js $NODE_VER is v22.x"
