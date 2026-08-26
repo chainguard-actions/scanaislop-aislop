@@ -1,0 +1,41 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal scan target with its own aislop config
+        run: |
+          mkdir -p /tmp/aislop-scan-target/.aislop
+          cat > /tmp/aislop-scan-target/.aislop/config.yml <<'EOF'
+          version: 1
+          exclude:
+            - node_modules
+            - .git
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+          echo "// test" > /tmp/aislop-scan-target/index.js
+
+      - name: Run aislop on absolute path directory
+        id: action
+        uses: .
+        with:
+          directory: /tmp/aislop-scan-target
+          version: "latest"
+
+      - name: Assert action completed successfully
+        run: |
+          echo "PASS: aislop ci completed on custom absolute directory without error"

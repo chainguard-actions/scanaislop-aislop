@@ -1,0 +1,19 @@
+version: 1
+
+exclude:
+  - node_modules
+  - .git
+  - dist
+  - build
+
+engines:
+  format: false
+  lint: false
+  code-quality: false
+  ai-slop: false
+  architecture: false
+  security: false
+
+ci:
+  failBelow: 0
+  format: json
