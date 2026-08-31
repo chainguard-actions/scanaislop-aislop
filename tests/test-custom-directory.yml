@@ -1,0 +1,46 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a nested project directory to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/projects/myapp/.aislop"
+          # Write a simple TypeScript file to scan
+          cat > "$GITHUB_WORKSPACE/projects/myapp/index.ts" << 'EOF'
+          export function multiply(a: number, b: number): number {
+            return a * b;
+          }
+          EOF
+          # Write a permissive config
+          cat > "$GITHUB_WORKSPACE/projects/myapp/.aislop/config.yml" << 'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: true
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: projects/myapp
+          format: json
+          node-version: "20"
+          version: latest
+
+      - name: Assert action succeeded scanning custom directory
+        run: |
+          echo "Action completed successfully scanning custom directory 'projects/myapp'"
+          echo "PASS"

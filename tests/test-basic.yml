@@ -1,0 +1,48 @@
+name: Test basic usage — JSON format, permissive threshold
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal project to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-target/.aislop"
+          # Write a simple JS file to scan
+          cat > "$GITHUB_WORKSPACE/scan-target/hello.js" << 'EOF'
+          // A simple hello world function
+          function greet(name) {
+            return "Hello, " + name + "!";
+          }
+          module.exports = { greet };
+          EOF
+          # Write a permissive config so the gate always passes
+          cat > "$GITHUB_WORKSPACE/scan-target/.aislop/config.yml" << 'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: true
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: scan-target
+          format: json
+          node-version: "20"
+          version: latest
+
+      - name: Assert action succeeded
+        run: |
+          echo "Action completed successfully with JSON format"
+          echo "PASS"

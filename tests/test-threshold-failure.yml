@@ -1,0 +1,59 @@
+name: Test threshold failure — action fails when score is below threshold
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a project with an impossibly high threshold
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-target/.aislop"
+          # Write a simple JS file to scan
+          cat > "$GITHUB_WORKSPACE/scan-target/app.js" << 'EOF'
+          // This is a simple app
+          function run() {
+            console.log("running");
+          }
+          run();
+          EOF
+          # Set failBelow to 101 — impossible to achieve, so CI always fails
+          cat > "$GITHUB_WORKSPACE/scan-target/.aislop/config.yml" << 'EOF'
+          version: 1
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: true
+            architecture: false
+            security: false
+          ci:
+            failBelow: 101
+            format: json
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          directory: scan-target
+          format: json
+          node-version: "20"
+          version: latest
+
+      - name: Assert action failed due to threshold
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action correctly failed because score is below threshold (failBelow: 101)"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action should have failed due to impossibly high threshold"
+            exit 1
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
