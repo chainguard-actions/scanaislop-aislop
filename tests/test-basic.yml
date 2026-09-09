@@ -1,0 +1,37 @@
+name: Test basic usage — aislop ci with default JSON format
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal project to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-target/.aislop"
+          # Create a simple JS file to scan
+          cat > "$GITHUB_WORKSPACE/scan-target/hello.js" << 'EOF'
+          function greet(name) {
+            return "Hello, " + name;
+          }
+          module.exports = { greet };
+          EOF
+          # Create a permissive config so the gate always passes
+          cat > "$GITHUB_WORKSPACE/scan-target/.aislop/config.yml" << 'EOF'
+          version: 1
+          ci:
+            failBelow: 0
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: scan-target
+          format: json
+
+      - name: Assert action completed successfully
+        run: |
+          echo "Action completed with JSON format"
+          echo "PASS: aislop ci ran successfully with default JSON format"

@@ -1,0 +1,38 @@
+name: Test human format output
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal project to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-target/.aislop"
+          # Create a simple Python file to scan
+          cat > "$GITHUB_WORKSPACE/scan-target/main.py" << 'EOF'
+          def add(a, b):
+              return a + b
+
+          if __name__ == "__main__":
+              print(add(1, 2))
+          EOF
+          # Create a permissive config so the gate always passes
+          cat > "$GITHUB_WORKSPACE/scan-target/.aislop/config.yml" << 'EOF'
+          version: 1
+          ci:
+            failBelow: 0
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: scan-target
+          format: human
+
+      - name: Assert action completed successfully with human format
+        run: |
+          echo "Action completed with human format"
+          echo "PASS: aislop ci ran successfully with human format"

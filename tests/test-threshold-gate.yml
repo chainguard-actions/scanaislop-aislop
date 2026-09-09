@@ -1,0 +1,63 @@
+name: Test threshold gate — action fails when score is below failBelow
+on:
+  workflow_dispatch:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a project with a very high threshold that should fail
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/scan-target/.aislop"
+          # Create a JS file with patterns aislop would flag
+          cat > "$GITHUB_WORKSPACE/scan-target/slop.js" << 'EOF'
+          // This function adds two numbers together and returns the result
+          function add(a, b) {
+            try {
+              return a + b;
+            } catch (e) {
+              // swallowed exception
+            }
+          }
+
+          // This function multiplies two numbers together and returns the result
+          function multiply(a, b) {
+            try {
+              return a * b;
+            } catch (e) {
+              // swallowed exception
+            }
+          }
+
+          module.exports = { add, multiply };
+          EOF
+          # Set failBelow to 101 (impossible to pass — score is always 0-100)
+          cat > "$GITHUB_WORKSPACE/scan-target/.aislop/config.yml" << 'EOF'
+          version: 1
+          ci:
+            failBelow: 101
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          directory: scan-target
+          format: json
+
+      - name: Assert action failed due to threshold gate
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action correctly failed because score was below failBelow threshold"
+          elif [ "$OUTCOME" = "success" ]; then
+            echo "FAIL: action should have failed due to impossibly high threshold (failBelow: 101)"
+            exit 1
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
