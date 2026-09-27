@@ -10,17 +10,17 @@
 
 **Harden Agent Version:** `2`
 
-Action **scanaislop--aislop/v0.16.1** was hardened automatically. 1 finding(s) were identified and resolved across 2 iteration(s).
+Action **scanaislop--aislop/v0.16.1** was hardened automatically. 1 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### unpinned-uses (severity: high)
 
-The composite action step uses `actions/setup-node@v7`, which is a mutable tag reference rather than a pinned 40-character commit SHA. This means the action could be silently updated to a different (potentially malicious) version without any change to this file. It should be pinned to a full SHA, e.g. `actions/setup-node@<40-char-sha> # v7`.
+The composite action step `uses: actions/setup-node@v7` references a mutable tag (`@v7`) rather than a pinned 40-character commit SHA. This means the action could be silently updated or replaced with a malicious version without any change to the workflow, creating a supply-chain risk.
 
 Locations:
 
-- `action.yml:34`
+- `action.yml:33`
 
 ## Iteration Notes
 
@@ -30,16 +30,5 @@ Locations:
 
 **Notes:**
 
-Replaced `actions/setup-node@v7` with the pinned SHA reference `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7` in hardened/action/action.yml line 34. The SHA was resolved via the GitHub API.
-
-### Iteration 2
-
-**Fixes applied:** script-injection, github-env-injection
-
-**Notes:**
-
-Fixed three security findings across three workflow files:
-1. ci.yml: Moved `${{ needs.test-matrix.result }}` out of the `run:` shell string into an `env:` block as `TEST_MATRIX_RESULT`, referencing it as `$TEST_MATRIX_RESULT` in the shell script.
-2. contributors.yml: Moved `${{ github.repository }}` and `${{ github.ref_name }}` out of the `run:` shell string into an `env:` block as `GH_REPOSITORY` and `GH_REF_NAME`, referencing them as `$GH_REPOSITORY` and `$GH_REF_NAME` in the shell script.
-3. release.yml: Added `safe_tag="$(printf '%s' "$RELEASE_TAG" | tr -d '\n\r')"` before the `echo "tag=..." >> "$GITHUB_OUTPUT"` line, writing `$safe_tag` instead of the raw `$RELEASE_TAG` to prevent newline injection into the special environment file.
+Pinned `actions/setup-node@v7` to its full commit SHA `actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7` in hardened/action/action.yml line 33. The mutable tag was replaced with the immutable SHA to prevent supply-chain attacks via silent action updates.
 
