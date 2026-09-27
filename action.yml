@@ -42,7 +42,7 @@ runs:
           -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
           "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
     - name: Setup Node.js
-      uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7
+      uses: chainguard-actions/actions-setup-node@5b1db53754f77246b80c63a657eefd395655dd0e # v7
       with:
         node-version: ${{ inputs.node-version }}
     - name: Run aislop ci

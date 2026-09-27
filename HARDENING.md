@@ -10,49 +10,25 @@
 
 **Harden Agent Version:** `2`
 
-Action **scanaislop--aislop/v0.14.1** was hardened automatically. 4 finding(s) were identified and resolved across 1 iteration(s).
+Action **scanaislop--aislop/v0.14.1** was hardened automatically. 1 finding(s) were identified and resolved across 1 iteration(s).
 
 ## Findings Fixed
 
 ### unpinned-uses (severity: high)
 
-action.yml references `actions/setup-node@v7` using a mutable tag instead of a pinned 40-character commit SHA. This allows supply-chain attacks if the tag is moved to a different commit.
+The composite action step uses `actions/setup-node@v7`, which is a mutable tag reference rather than a pinned 40-character commit SHA. This means the action could be silently updated to a different (potentially malicious) version without any change to the workflow. It should be pinned to a full SHA, e.g. `actions/setup-node@1d0ff469b12462b0e4b4c3c8a8d4b4b4b4b4b4b4 # v7`.
 
 Locations:
 
-- `action.yml:26`
-
-### script-injection (severity: high)
-
-Rule (a): The `check` job's run block in ci.yml directly interpolates `${{ needs.test-matrix.result }}` inside a shell command string. Any `${{ ... }}` expression inside a `run:` block is subject to script injection before the shell processes it. Offending line: `if [ "${{ needs.test-matrix.result }}" != "success" ]; then`
-
-Locations:
-
-- `.github/workflows/ci.yml:70`
-
-### script-injection (severity: high)
-
-Rule (a): The 'Push refresh branch' step in contributors.yml directly interpolates `${{ github.repository }}` and `${{ github.ref_name }}` inside a shell `echo` command in a `run:` block. These github.* context values flow through YAML template substitution before the shell processes them. Offending line: `echo "Pushed to \`bot/contributors-update\`. Open a PR from the GitHub UI to merge: https://github.com/${{ github.repository }}/compare/${{ github.ref_name }}...bot/contributors-update?expand=1"`
-
-Locations:
-
-- `.github/workflows/contributors.yml:48`
-
-### github-env-injection (severity: high)
-
-In release.yml, the `RELEASE_TAG` environment variable is sourced from `${{ github.event.release.tag_name || inputs.tag }}` (where `inputs.tag` is attacker-controllable via workflow_dispatch) and is written to `$GITHUB_OUTPUT` via `echo "tag=$RELEASE_TAG" >> "$GITHUB_OUTPUT"` without the required sanitization step (`printf '%s' "$RELEASE_TAG" | tr -d '\n\r'`). Although a regex validation is applied, the check requires the specific sanitization pipeline before every write to a special environment file when the source is untrusted input.
-
-Locations:
-
-- `.github/workflows/release.yml:76`
+- `action.yml:30`
 
 ## Iteration Notes
 
 ### Iteration 1
 
-**Fixes applied:** unpinned-uses, script-injection, github-env-injection
+**Fixes applied:** unpinned-uses
 
 **Notes:**
 
-Fixed 4 findings: (1) Pinned actions/setup-node@v7 to SHA 820762786026740c76f36085b0efc47a31fe5020 in action.yml. (2) Fixed script injection in ci.yml by moving ${{ needs.test-matrix.result }} into an env block as MATRIX_RESULT. (3) Fixed script injection in contributors.yml by moving ${{ github.repository }} and ${{ github.ref_name }} into an env block as GH_REPOSITORY and GH_REF_NAME. (4) Fixed github-env-injection in release.yml by sanitizing RELEASE_TAG with printf/tr before writing to $GITHUB_OUTPUT.
+Pinned actions/setup-node@v7 to its full commit SHA (820762786026740c76f36085b0efc47a31fe5020) in hardened/action/action.yml line 30. The tag is preserved as a comment (# v7) for readability.
 
