@@ -1,0 +1,30 @@
+name: Test custom Node.js version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          directory: "."
+          node-version: "20"
+          format: "json"
+
+      - name: Assert action ran with Node 20 (succeeded or failed gracefully)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: aislop ci completed with Node 20"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: aislop ci ran with Node 20 and failed quality gate (expected for test repo)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

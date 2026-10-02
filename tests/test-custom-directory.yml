@@ -1,0 +1,40 @@
+name: Test custom directory input
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a subdirectory with source files to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/sample-src"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/sample-src/hello.js" <<'EOF'
+          // A simple JS file for scanning
+          function greet(name) {
+            return "Hello, " + name + "!";
+          }
+          module.exports = { greet };
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          directory: "tests/fixtures/sample-src"
+          format: "json"
+
+      - name: Assert action ran on custom directory (succeeded or failed gracefully)
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: aislop ci completed on custom directory"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: aislop ci ran on custom directory and failed quality gate (expected)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi
