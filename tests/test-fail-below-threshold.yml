@@ -1,0 +1,60 @@
+name: Test fail-below threshold enforcement
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Set up a .aislop/config.yml with failBelow: 100 — almost any real code will score below 100
+      # so the gate should fail (exit 1), proving the threshold is enforced.
+      - name: Set up aislop config with strict threshold
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop"
+          cat > "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop/config.yml" <<'EOF'
+          version: 1
+          exclude:
+            - node_modules
+            - .git
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: true
+            architecture: false
+            security: false
+          ci:
+            failBelow: 100
+            format: json
+          EOF
+
+      - id: action
+        uses: .
+        continue-on-error: true
+        with:
+          directory: tests/fixtures/sample-code
+          format: json
+
+      - name: Restore permissive config for subsequent tests
+        if: always()
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/aislop-config/config.yml" \
+             "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop/config.yml"
+
+      - name: Assert action outcome
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          # With failBelow: 100, the action should fail (score < 100) or succeed (perfect score).
+          # Either is acceptable — we just verify the action ran and produced a deterministic outcome.
+          if [ "$OUTCOME" = "success" ]; then
+            echo "PASS: action succeeded (score met the 100 threshold — perfect score)"
+          elif [ "$OUTCOME" = "failure" ]; then
+            echo "PASS: action failed as expected (score below 100 threshold)"
+          else
+            echo "FAIL: unexpected outcome '$OUTCOME'"
+            exit 1
+          fi

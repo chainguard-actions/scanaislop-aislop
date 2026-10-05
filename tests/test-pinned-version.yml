@@ -1,0 +1,27 @@
+name: Test pinned CLI version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Set up a minimal .aislop/config.yml with failBelow: 0 so the gate always passes
+      - name: Set up aislop config in scan target
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/aislop-config/config.yml" \
+             "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop/config.yml"
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-code
+          format: json
+          version: "0.18.0"
+
+      - name: Assert action completed successfully with pinned version
+        run: |
+          echo "Action step completed with pinned version 0.18.0"
+          echo "PASS: aislop ci ran with version 0.18.0 without error"

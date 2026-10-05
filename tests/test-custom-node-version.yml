@@ -1,0 +1,27 @@
+name: Test custom Node.js version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      # Set up a minimal .aislop/config.yml with failBelow: 0 so the gate always passes
+      - name: Set up aislop config in scan target
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop"
+          cp "$GITHUB_WORKSPACE/tests/fixtures/aislop-config/config.yml" \
+             "$GITHUB_WORKSPACE/tests/fixtures/sample-code/.aislop/config.yml"
+
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/sample-code
+          format: json
+          node-version: "22"
+
+      - name: Assert action completed successfully with Node.js 22
+        run: |
+          echo "Action step completed with Node.js 22"
+          echo "PASS: aislop ci ran with node-version: 22 without error"
