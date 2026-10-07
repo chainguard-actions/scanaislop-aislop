@@ -1,0 +1,50 @@
+name: Test custom directory scan
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+
+      - name: Create a minimal .aislop/config.yml with failBelow 0
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/.aislop"
+          cat > "$GITHUB_WORKSPACE/.aislop/config.yml" <<'EOF'
+          version: 1
+          exclude:
+            - node_modules
+            - .git
+          engines:
+            format: false
+            lint: false
+            code-quality: false
+            ai-slop: false
+            architecture: false
+            security: false
+          ci:
+            failBelow: 0
+            format: json
+          EOF
+
+      - name: Create a sample subdirectory to scan
+        run: |
+          mkdir -p "$GITHUB_WORKSPACE/sample-src"
+          cat > "$GITHUB_WORKSPACE/sample-src/hello.js" <<'EOF'
+          // A simple hello world function
+          function hello(name) {
+            return `Hello, ${name}!`;
+          }
+          module.exports = { hello };
+          EOF
+
+      - id: action
+        uses: .
+        with:
+          directory: "sample-src"
+          format: "json"
+          version: "0.18.1"
+
+      - name: Assert action completed for custom directory
+        run: |
+          echo "PASS: aislop ran successfully on custom directory sample-src"
