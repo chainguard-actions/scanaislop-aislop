@@ -20,6 +20,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v0.16.1 | [`v0.16.1`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.16.1) | [`7d50952`](https://github.com/scanaislop/aislop/commit/7d50952bf26a450e94244760b73eec15efad3724) |
 | v0.17.0 | [`v0.17.0`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.17.0) | [`65f1306`](https://github.com/scanaislop/aislop/commit/65f1306ca6ec38ca02105ad95def2460dfbdcebf) |
 | v0.18.0 | [`v0.18.0`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.18.0) | [`fbec7d7`](https://github.com/scanaislop/aislop/commit/fbec7d7bc41ee93f61a9b42c7651a2309adbb0ea) |
+| v0.18.1 | [`v0.18.1`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.18.1) | [`ec7589f`](https://github.com/scanaislop/aislop/commit/ec7589f9a97ef6905c0930fcad6e1eeeecd7efb5) |
 
 ## Privacy
 
