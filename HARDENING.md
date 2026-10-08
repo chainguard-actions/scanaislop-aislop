@@ -16,11 +16,11 @@ Action **scanaislop--aislop/v0.16.0** was hardened automatically. 1 finding(s) w
 
 ### unpinned-uses (severity: high)
 
-The action.yml references `actions/setup-node@v7`, which uses a mutable tag instead of a pinned 40-character commit SHA. This means the action could silently pull in a different (potentially malicious) version of setup-node if the tag is moved. It should be pinned to a full SHA, e.g. `actions/setup-node@<40-char-sha> # v7`.
+The composite action step uses `actions/setup-node@v7`, which is a mutable tag reference rather than a pinned 40-character commit SHA. A tag can be moved to point to a different (potentially malicious) commit at any time, enabling supply-chain attacks. It should be pinned to a full SHA, e.g. `actions/setup-node@1d0ff469b12461e0d0af1f4f8e0e6b8e8e8e8e8e # v7`.
 
 Locations:
 
-- `action.yml:32`
+- `action.yml:33`
 
 ## Iteration Notes
 
@@ -30,5 +30,5 @@ Locations:
 
 **Notes:**
 
-Pinned `actions/setup-node@v7` to its full commit SHA `820762786026740c76f36085b0efc47a31fe5020` in hardened/action/action.yml (line 32). The original tag is preserved as an inline comment for readability.
+Pinned `actions/setup-node@v7` to its full commit SHA `actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7` in hardened/action/action.yml line 33.
 
