@@ -16,11 +16,11 @@ Action **scanaislop--aislop/v0.18.1** was hardened automatically. 1 finding(s) w
 
 ### unpinned-uses (severity: high)
 
-action.yml uses `actions/setup-node@v7`, which is a mutable tag reference rather than a pinned 40-character commit SHA. This means the action could be silently updated to a different (potentially malicious) version without any change to this file, creating a supply-chain risk.
+action.yml references `actions/setup-node@v7`, which uses a mutable tag (`v7`) instead of a pinned 40-character commit SHA. If the tag is moved or the upstream repository is compromised, the action will silently execute different code, enabling supply-chain attacks.
 
 Locations:
 
-- `action.yml:33`
+- `action.yml:30`
 
 ## Iteration Notes
 
@@ -30,5 +30,5 @@ Locations:
 
 **Notes:**
 
-Pinned `actions/setup-node@v7` to its full commit SHA `820762786026740c76f36085b0efc47a31fe5020` in hardened/action/action.yml (line 33). The original tag is preserved as a comment `# v7` for readability.
+Pinned `actions/setup-node@v7` to the full commit SHA `actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7` in hardened/action/action.yml line 30. No other findings were present.
 
