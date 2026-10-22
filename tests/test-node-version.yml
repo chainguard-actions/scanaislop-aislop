@@ -1,0 +1,29 @@
+name: Test custom node-version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/clean-project
+          node-version: "22"
+          version: "0.18.0"
+      - name: Assert node 22 installed and action succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          v="$(node --version)"
+          echo "node: $v"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          case "$v" in
+            v22.*) echo "PASS" ;;
+            *) echo "FAIL: expected node v22.x"; exit 1 ;;
+          esac
