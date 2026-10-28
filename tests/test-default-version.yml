@@ -1,0 +1,35 @@
+name: Test default version resolution
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/clean-project
+      - name: Assert action succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert resolve-version.sh behavior
+        run: |
+          R="$GITHUB_WORKSPACE/action/resolve-version.sh"
+          check() {
+            if [ "$1" != "$2" ]; then echo "FAIL: got '$1' expected '$2'"; exit 1; fi
+            echo "ok: $1"
+          }
+          check "$(bash "$R" "1.2.3" "/x" "")" "1.2.3"
+          check "$(bash "$R" "" "/x" "v0.18.1")" "0.18.1"
+          check "$(bash "$R" "" "/x" "v1")" "latest"
+          check "$(bash "$R" "" "/home/runner/work/_actions/scanaislop/aislop/v0.19.1" "")" "0.19.1"
+          check "$(bash "$R" "" "/x" "")" "latest"
+          echo "PASS"
