@@ -1,0 +1,49 @@
+name: Test resolve-version script
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Assert version resolution rules
+        run: |
+          S="$GITHUB_WORKSPACE/action/resolve-version.sh"
+          fail=0
+          check() {
+            local expected="$1"; shift
+            local actual
+            actual="$(bash "$S" "$@")"
+            echo "args: [$*] -> '$actual' (expected '$expected')"
+            if [ "$actual" != "$expected" ]; then echo "FAIL"; fail=1; fi
+          }
+          check "1.2.3" "1.2.3" "" ""
+          check "latest" "latest" "" ""
+          check "0.18.1" "" "/tmp/x" "v0.18.1"
+          check "1.0.0-beta.1" "" "/tmp/x" "v1.0.0-beta.1"
+          check "latest" "" "/tmp/x" "v1"
+          check "latest" "" "/tmp/x" "main"
+          check "latest" "" "" ""
+          check "0.17.2" "" "/home/runner/_actions/scanaislop/aislop/v0.17.2" ""
+          PKG_VER="$(sed -n 's/^[[:space:]]*"version":[[:space:]]*"\([^"]*\)".*/\1/p' "$GITHUB_WORKSPACE/package.json" | head -n 1)"
+          echo "package.json version: $PKG_VER"
+          check "$PKG_VER" "" "$GITHUB_WORKSPACE" "0123456789abcdef0123456789abcdef01234567"
+          check "latest" "" "/nonexistent" "0123456789abcdef0123456789abcdef01234567"
+          if [ "$fail" -ne 0 ]; then exit 1; fi
+          echo "PASS"
+      - id: action
+        name: Run action with explicit version input
+        uses: .
+        with:
+          directory: tests/fixtures/clean-project
+          version: "0.19.0"
+      - name: Assert action step succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          echo "PASS"
