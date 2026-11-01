@@ -44,7 +44,7 @@ runs:
           -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
           "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
     - name: Setup Node.js
-      uses: actions/setup-node@949feb2413d6458794dcd2491c4babbbce0c15c1 # v7.1.0
+      uses: chainguard-actions/actions-setup-node@a706f95f3489bb503dc0b04149be6f2d00d7dcab # v7.1.0
       with:
         node-version: ${{ inputs.node-version }}
 
