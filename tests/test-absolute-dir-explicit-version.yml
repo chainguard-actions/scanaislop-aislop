@@ -1,0 +1,30 @@
+name: Test absolute directory with explicit version and node-version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          directory: ${{ github.workspace }}/tests/fixtures/clean-project
+          version: latest
+          node-version: "22"
+      - name: Assert action succeeded with requested node version
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          NODE_V="$(node --version)"
+          echo "node: $NODE_V"
+          case "$NODE_V" in
+            v22.*) ;;
+            *) echo "FAIL: expected node v22.x"; exit 1 ;;
+          esac
+          echo "PASS"
