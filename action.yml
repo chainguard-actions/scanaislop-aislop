@@ -4,6 +4,7 @@ author: scanaislop
 branding:
   icon: shield
   color: green
+
 inputs:
   directory:
     description: Directory to scan.
@@ -21,6 +22,7 @@ inputs:
     description: npm aislop CLI version to run (e.g. "0.10.1"). Defaults to the latest published release. This is separate from the GitHub Action ref in uses:.
     required: false
     default: "latest"
+
 runs:
   using: composite
   steps:
@@ -42,9 +44,10 @@ runs:
           -d "{\"repository\":\"${GITHUB_REPOSITORY}\",\"action\":\"${GITHUB_ACTION_REPOSITORY}\"}" \
           "https://actions.enforce.dev/actions/v1/record" >/dev/null 2>&1 || true
     - name: Setup Node.js
-      uses: chainguard-actions/actions-setup-node@a706f95f3489bb503dc0b04149be6f2d00d7dcab # v7
+      uses: chainguard-actions/actions-setup-node@0fc7fd914070e07cca22606e4cab3cfeaf43711d # v7
       with:
         node-version: ${{ inputs.node-version }}
+
     - name: Run aislop ci
       shell: bash
       env:
