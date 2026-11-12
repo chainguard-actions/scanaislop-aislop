@@ -1,0 +1,32 @@
+name: Test pinned CLI version and custom Node.js version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/clean-project
+          version: "0.20.1"
+          node-version: "22"
+      - name: Assert action succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert requested Node.js major version is installed
+        run: |
+          ACTUAL="$(node --version)"
+          echo "actual: $ACTUAL"
+          case "$ACTUAL" in
+            v22.*) echo "PASS" ;;
+            *) echo "FAIL: expected Node.js v22.x"; exit 1 ;;
+          esac
