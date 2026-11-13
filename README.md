@@ -25,6 +25,7 @@ Hardened by [Chainguard](https://www.chainguard.dev) from the upstream action at
 | v0.19.1 | [`v0.19.1`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.19.1) | [`34f42cb`](https://github.com/scanaislop/aislop/commit/34f42cbbaa346da8bd361add68e1d06d7e007182) | [`HARDENING.md`](https://github.com/chainguard-actions/scanaislop-aislop/blob/v0.19.1/HARDENING.md) |
 | v0.20.0 | [`v0.20.0`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.20.0) | [`154dd28`](https://github.com/scanaislop/aislop/commit/154dd28356a443c740ed89e7f6c877b528c0776e) | [`HARDENING.md`](https://github.com/chainguard-actions/scanaislop-aislop/blob/v0.20.0/HARDENING.md) |
 | v0.20.1 | [`v0.20.1`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.20.1) | [`9e83199`](https://github.com/scanaislop/aislop/commit/9e83199f503fb8dd82c2688efdeca9ce8b404a32) | [`HARDENING.md`](https://github.com/chainguard-actions/scanaislop-aislop/blob/v0.20.1/HARDENING.md) |
+| v0.21.0 | [`v0.21.0`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v0.21.0) | [`c0a3c1d`](https://github.com/scanaislop/aislop/commit/c0a3c1d96b88b8950432f540731b9c67b2b77f2b) | [`HARDENING.md`](https://github.com/chainguard-actions/scanaislop-aislop/blob/v0.21.0/HARDENING.md) |
 | v1 | [`v1`](https://github.com/chainguard-actions/scanaislop-aislop/tree/v1) | [`ec7589f`](https://github.com/scanaislop/aislop/commit/ec7589f9a97ef6905c0930fcad6e1eeeecd7efb5) | [`HARDENING.md`](https://github.com/chainguard-actions/scanaislop-aislop/blob/v1/HARDENING.md) |
 
 ## Privacy
