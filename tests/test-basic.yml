@@ -1,0 +1,27 @@
+name: Test basic usage (json format, relative directory)
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/aislop-pass
+      - name: Assert action succeeded and node is available
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          if ! command -v node >/dev/null 2>&1; then
+            echo "FAIL: node not installed by action"
+            exit 1
+          fi
+          echo "node: $(node --version)"
+          echo "PASS"
