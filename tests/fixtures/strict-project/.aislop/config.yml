@@ -1,0 +1,42 @@
+version: 1
+
+exclude:
+  - node_modules
+  - .git
+  - dist
+  - build
+  - coverage
+
+engines:
+  format: false
+  lint: false
+  code-quality: true
+  ai-slop: true
+  architecture: false
+  security: false
+
+quality:
+  maxFunctionLoc: 3
+  maxFileLoc: 10
+  maxNesting: 1
+  maxParams: 1
+
+security:
+  audit: false
+  auditTimeout: 25000
+
+scoring:
+  weights:
+    format: 0.5
+    lint: 1.0
+    code-quality: 1.5
+    ai-slop: 1.0
+    architecture: 1.0
+    security: 2.0
+  thresholds:
+    good: 75
+    ok: 50
+
+ci:
+  failBelow: 100
+  format: json
