@@ -1,0 +1,26 @@
+version: 1
+
+exclude:
+  - node_modules
+  - .git
+
+engines:
+  format: false
+  lint: false
+  code-quality: true
+  ai-slop: true
+  architecture: false
+  security: true
+
+security:
+  audit: false
+
+quality:
+  maxFunctionLoc: 5
+  maxFileLoc: 20
+  maxNesting: 1
+  maxParams: 2
+
+ci:
+  failBelow: 100
+  format: json

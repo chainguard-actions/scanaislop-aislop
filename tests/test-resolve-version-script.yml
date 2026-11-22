@@ -1,0 +1,55 @@
+name: Test resolve-version.sh logic
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Assert version resolution cases
+        run: |
+          S="$GITHUB_WORKSPACE/action/resolve-version.sh"
+          fail=0
+          check() {
+            local expected="$1"; shift
+            local actual
+            actual="$(bash "$S" "$@")"
+            echo "args=[$*] -> '$actual' (expected '$expected')"
+            if [ "$actual" != "$expected" ]; then
+              echo "FAIL"
+              fail=1
+            fi
+          }
+          check "1.2.3" "1.2.3" "" ""
+          check "latest" "latest" "" ""
+          check "0.18.1" "" "/tmp/x" "v0.18.1"
+          check "1.0.0-beta.1" "" "/tmp/x" "v1.0.0-beta.1"
+          check "latest" "" "/tmp/x" "v1"
+          check "latest" "" "/tmp/x" "main"
+          check "latest" "" "" ""
+          check "0.20.0" "" "/home/runner/work/_actions/scanaislop/aislop/v0.20.0" ""
+          mkdir -p /tmp/fakeaction
+          # The script's sed expects "version" on its own line (multi-line package.json)
+          printf '{\n  "name": "aislop",\n  "version": "9.8.7"\n}\n' > /tmp/fakeaction/package.json
+          check "9.8.7" "" "/tmp/fakeaction" "0123456789abcdef0123456789abcdef01234567"
+          check "9.8.7" "" "/tmp/fakeaction/" "0123456789abcdef0123456789abcdef01234567"
+          check "latest" "" "/tmp/nonexistent" "0123456789abcdef0123456789abcdef01234567"
+          if [ "$fail" -ne 0 ]; then
+            exit 1
+          fi
+          echo "PASS"
+      - id: action
+        uses: .
+        with:
+          directory: tests/fixtures/clean-project
+          version: "0.22.3"
+      - name: Assert action with explicit version succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          echo "PASS"
