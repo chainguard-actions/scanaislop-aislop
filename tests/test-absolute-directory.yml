@@ -1,0 +1,37 @@
+name: Test absolute directory path and custom node version
+on:
+  workflow_dispatch:
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@de0fac2e4500dabe0009e67214ff5f5447ce83dd # v6.0.2
+      - name: Copy fixture to an absolute path outside the workspace
+        run: |
+          rm -rf /tmp/aislop-abs-project
+          cp -R "$GITHUB_WORKSPACE/tests/fixtures/clean-project" /tmp/aislop-abs-project
+          ls -la /tmp/aislop-abs-project
+      - id: action
+        uses: .
+        with:
+          directory: /tmp/aislop-abs-project
+          node-version: "22"
+          version: "0.23.0"
+      - name: Assert action succeeded
+        env:
+          OUTCOME: ${{ steps.action.outcome }}
+        run: |
+          echo "outcome: $OUTCOME"
+          if [ "$OUTCOME" != "success" ]; then
+            echo "FAIL: expected success"
+            exit 1
+          fi
+          echo "PASS"
+      - name: Assert Node.js 22 was installed
+        run: |
+          v="$(node --version)"
+          echo "node: $v"
+          case "$v" in
+            v22.*) echo "PASS" ;;
+            *) echo "FAIL: expected Node 22"; exit 1 ;;
+          esac
